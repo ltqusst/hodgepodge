@@ -1,4 +1,10 @@
 
+// C++ wrapper for FreeType2 on opencv Mat RGB image
+//
+// target_include_directories() add /usr/include/freetype2
+// target_link_libraries()      add libfreetype.so
+//
+
 #ifndef _FREETYPE2LIB_H_
 #define _FREETYPE2LIB_H_
 
@@ -190,5 +196,6 @@ private:
     int         cur_size;
 };
 
+typedef ft2wrap FreeType2Lib;
 
 #endif

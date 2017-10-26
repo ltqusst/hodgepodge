@@ -42,7 +42,7 @@ public:
         _q.erase(it);//remove from deque
         
         if(_q.size() < _size_limit)
-            _cv_notfull.notify_one();
+            _cv_notfull.notify_all();
         
         return true;
     }
@@ -62,7 +62,7 @@ public:
         });
         
         _q.push_back(obj);
-        _cv.notify_one();
+        _cv.notify_all();
     }
     
     
