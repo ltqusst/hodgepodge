@@ -6,12 +6,13 @@
 #include <deque>
 #include <condition_variable>
 
+
 template<class T>
 class thread_queue
 {
 public:
     thread_queue(int sz = 0x7FFFFFFF):_size_limit(sz), _closed(false), _max_size(0){}
-
+    
     //with Filter on element(get specific element)
     template<class FilterFunc>
     bool get(T &ret, FilterFunc filter)

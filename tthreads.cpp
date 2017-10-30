@@ -137,6 +137,39 @@ void test3()
   MyObj::cnt0.load(), MyObj::cnt1.load(), sque.size());
 }
 
+
+#include <iostream>
+#include <chrono>
+#include "thread_pool.h"
+ThreadPool th(4);
+
+int stage2(std::string w)
+{
+    std::cout << " >>>>> stage2:" << w.c_str();
+    return 0;
+}
+
+int stage1(std::string w)
+{
+    std::cout << " >>>>> stage1:" << w.c_str();
+    
+    w +="World";
+    
+    th.enqueue(stage2, w);
+    return 0;
+}
+
+void test4()
+{
+    auto d1 = th.enqueue(stage1, std::string("Hello"));
+    
+    //std::future<int> d1 = std::async(stage1, 1);
+    //std::future<int> d2 = std::async(stage2, std::move(d1));
+    //printf(" >>>>> %d\n", (int)d2.get());
+    
+    th.stop_all();
+}
+
 int main()
 {
     nothing();
@@ -145,8 +178,9 @@ int main()
     std::shared_ptr<char> pv(new char[100], std::default_delete<char[]>());
     
     //test1();  
-    test2();
-    //test3();    
+    //test2();
+    //test3();
+    test4();    
 }
 
 
