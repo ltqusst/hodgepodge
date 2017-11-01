@@ -74,7 +74,7 @@ message(STATUS "Eigen3 found: ${EIGEN3_FOUND}")
 message(STATUS "Eigen3 include dir found at ${EIGEN3_INCLUDE_DIRS}")
 message(STATUS "Eigen3 version: ${EIGEN3_VERSION}")
 
-include_directories(${EIGEN3_INCLUDE_DIR})
+include_directories(${EIGEN3_INCLUDE_DIR}) 
 add_executable              (teigen3test teigen3test.cpp)
 target_include_directories  (teigen3test PUBLIC ${EIGEN3_INCLUDE_DIR})
 

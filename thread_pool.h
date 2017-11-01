@@ -1,7 +1,7 @@
 /*
  * This file is from https://github.com/progschj/ThreadPool, 23 January 2015.
  * Below is the original attribution and its license.
- * 
+ *
  * Changes:
  *  - Added namespace.
  *
@@ -42,9 +42,9 @@
 
 class ThreadPool {
 public:
-    ThreadPool(size_t);
+    ThreadPool(size_t, size_t);
     template<class F, class... Args>
-    auto enqueue(F&& f, Args&&... args) 
+    auto enqueue(F&& f, Args&&... args)
         -> std::future<typename std::result_of<F(Args...)>::type>;
     ~ThreadPool();
     void stop_all(void);
@@ -53,17 +53,19 @@ private:
     std::vector< std::thread > workers;
     // the task queue
     std::queue< std::function<void()> > tasks;
-    
+
     // synchronization
     std::mutex queue_mutex;
     std::condition_variable condition;
+    std::condition_variable condition_notfull;
     bool stop;
+    size_t work_limits;
 };
 
 
 // the constructor just launches some amount of workers
-inline ThreadPool::ThreadPool(size_t threads)
-    :   stop(false)
+inline ThreadPool::ThreadPool(size_t threads, size_t work_limits)
+    :   stop(false), work_limits(work_limits)
 {
     for(size_t i = 0;i<threads;++i)
         workers.emplace_back(
@@ -81,6 +83,8 @@ inline ThreadPool::ThreadPool(size_t threads)
                             return;
                         task = std::move(this->tasks.front());
                         this->tasks.pop();
+
+                        this->condition_notfull.notify_all();
                     }
 
                     task();
@@ -91,7 +95,7 @@ inline ThreadPool::ThreadPool(size_t threads)
 
 // add new work item to the pool
 template<class F, class... Args>
-auto ThreadPool::enqueue(F&& f, Args&&... args) 
+auto ThreadPool::enqueue(F&& f, Args&&... args)
     -> std::future<typename std::result_of<F(Args...)>::type>
 {
     using return_type = typename std::result_of<F(Args...)>::type;
@@ -99,18 +103,21 @@ auto ThreadPool::enqueue(F&& f, Args&&... args)
     auto task = std::make_shared< std::packaged_task<return_type()> >(
             std::bind(std::forward<F>(f), std::forward<Args>(args)...)
         );
-        
+
     std::future<return_type> res = task->get_future();
     {
         std::unique_lock<std::mutex> lock(queue_mutex);
 
         // don't allow enqueueing after stopping the pool
-        
+
         //if(stop)
         //    throw std::runtime_error("enqueue on stopped ThreadPool");
-        
+
         //since we only stop, no resume, worker thread may enqueue other task to
-        //fully complete their work even after stop=true, 
+        //fully complete their work even after stop=true,
+
+		//prevent enqueue too many task ( their parameter may consume big memory )
+		condition_notfull.wait(lock, [this]{return this->stop || tasks.size() < work_limits;});
 
         tasks.emplace([task](){ (*task)(); });
     }
@@ -139,7 +146,7 @@ void ThreadPool::stop_all(void)
     condition.notify_all();
     for(std::thread &worker: workers)
         worker.join();
-        
+
     workers.clear();
 }
 
