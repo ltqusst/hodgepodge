@@ -41,7 +41,9 @@ target_link_libraries(tthreads
 add_executable              (tremove tremove.cpp)
 add_executable              (tchrono tchrono.cpp)
 add_executable              (tforward tforward.cpp)
-
+add_executable              (tsmartptr tsmartptr.cpp)
+add_executable              (ttuple ttuple.cpp)
+add_executable              (ttemplspec ttemplspec.cpp)
 #=====================================================================
 pkg_check_modules (OpenCV REQUIRED opencv)
 #find_package(OpenCV 2.4.3 REQUIRED core imgproc highgui)
