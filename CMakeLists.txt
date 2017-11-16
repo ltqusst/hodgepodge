@@ -44,6 +44,22 @@ add_executable              (tforward tforward.cpp)
 add_executable              (tsmartptr tsmartptr.cpp)
 add_executable              (ttuple ttuple.cpp)
 add_executable              (ttemplspec ttemplspec.cpp)
+add_executable              (texcept texcept.cpp)
+add_executable              (tcast tcast.cpp)
+
+#=====================================================================
+# opensource RTSP lib 
+# pkg-config --cflags --libs live555
+pkg_check_modules (live555 REQUIRED live555)
+add_executable              (trtsp trtsp.cpp)
+target_include_directories  (trtsp PUBLIC ${live555_INCLUDE_DIRS} )
+target_link_libraries       (trtsp pthread ${live555_LIBRARIES} ) 
+
+#=====================================================================
+pkg_check_modules (libdrm REQUIRED libdrm)
+add_executable              (tdrm1 tdrm1.c)
+target_include_directories  (tdrm1 PUBLIC ${libdrm_INCLUDE_DIRS} )
+target_link_libraries       (tdrm1 pthread ${libdrm_LIBRARIES} ) 
 #=====================================================================
 pkg_check_modules (OpenCV REQUIRED opencv)
 #find_package(OpenCV 2.4.3 REQUIRED core imgproc highgui)
@@ -79,4 +95,37 @@ message(STATUS "Eigen3 version: ${EIGEN3_VERSION}")
 include_directories(${EIGEN3_INCLUDE_DIR}) 
 add_executable              (teigen3test teigen3test.cpp)
 target_include_directories  (teigen3test PUBLIC ${EIGEN3_INCLUDE_DIR})
+
+#====================================================================
+pkg_check_modules (glu REQUIRED glu)
+pkg_check_modules (x11 REQUIRED x11)
+
+if ((${x11_FOUND} EQUAL 1) AND (${glu_FOUND} EQUAL 1))
+
+add_executable              (tcube tcube.cpp)
+target_include_directories  (tcube PUBLIC ${glu_INCLUDE_DIRS} ${x11_INCLUDE_DIRS})
+target_link_libraries       (tcube pthread ${glu_LIBRARIES} ${x11_LIBRARIES} -lglut ) 
+
+elseif( NOT ${x11_FOUND} EQUAL 1)
+message( STATUS " x11 is not found, install libx11-dev please " )
+elseif( NOT ${glu_FOUND} EQUAL 1)
+message( STATUS " glu is not found, install libglu1-mesa please" )
+else()
+message( STATUS " something is wong, tcube will not  be build" )
+endif()
+
+#=====================================================================
+# NOTE, opensource version beignet (libcl.so) may conflict with closed-sourced intel opencl SDK
+# so if crash happens during dynamic loading process, please disable beignet version by
+# delete/rename correspongding icd files under /etc/OpenCL/vendor DIR.
+
+# all OpenCL implementation (either libOpenCL.so or libcl.so) will load all platforms (implementation)
+# specified under /etc/OpenCL/vendor DIR. but libOpenCL.so will crash when loading beignet.
+
+add_executable              (topencl topencl.cpp)
+#target_include_directories  (topencl PUBLIC)
+find_library(OPENCL_LIBRARY OpenCL HINTS /usr/lib/x86_64-linux-gnu)
+message( STATUS "OPENCL_LIBRARY = ${OPENCL_LIBRARY}"  )
+target_link_libraries       (topencl PUBLIC ${OPENCL_LIBRARY})
+
 
