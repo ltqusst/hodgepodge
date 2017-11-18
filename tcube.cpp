@@ -1,6 +1,8 @@
 #include <cstdio>
 #include <string.h>
-
+#include <vector>
+#include <set>
+#include <algorithm>
 
 //=====================================================================
 struct cube_edge_link{
@@ -14,16 +16,7 @@ struct cube_edge_link{
 struct cube
 {
     static int peer_off[6][4*3];
-    
-    // 0 1 2
-    // 7   3
-    // 6 5 4
-    char s[6*8];
-    char& get(int face) { return s[face*8]; }
-    char& get(int face, int edge, int id){ return s[face*8 + ((edge*2 + id)%8)]; }
-    
-    cube()
-    {
+    void init_peer_off(){
         static const cube_edge_link el[]={
             {0,0,  5,2},
             {0,1,  3,0},
@@ -46,7 +39,16 @@ struct cube
             for(int k=0;k<3;k++) peer_off[e.face0][e.edge0*3+k] = &(get(e.face1, e.edge1, 3-k)) - s;
             for(int k=0;k<3;k++) peer_off[e.face1][e.edge1*3+k] = &(get(e.face0, e.edge0, 3-k)) - s;
         }
-        
+    }
+    // 0 1 2
+    // 7   3
+    // 6 5 4
+    char s[6*8];
+    char& get(int face) { return s[face*8]; }
+    char& get(int face, int edge, int id){ return s[face*8 + ((edge*2 + id)%8)]; }
+
+    void reset()
+    {
         for(int face=0;face<6;face++)
         {
             char * p = &get(face);
@@ -68,6 +70,66 @@ struct cube
     }
 };
 
+bool operator==(const cube & a, const cube & b)
+{
+	return memcmp(a.s, b.s, sizeof(a.s)) == 0;
+}
+bool operator<(const cube & a, const cube & b)
+{
+	return memcmp(a.s, b.s, sizeof(a.s)) < 0;
+}
+int cube::peer_off[6][4*3]={0};
+
+int main()
+{
+	cube root;
+	root.reset();
+	root.init_peer_off();
+
+	std::set<cube> node_fixed;
+	std::vector<cube> node_act[2];
+	int actid = 0;
+	int depth = 0;
+	node_act[actid].push_back(root);
+
+	while(node_act[actid].size() > 0)
+	{
+		auto & na_cur = node_act[actid];
+		auto & na_next = node_act[1-actid];
+
+		na_next.clear();
+
+		printf("depth:%2d acting:%8d fixed:%8d\n",
+				depth, na_cur.size(), node_fixed.size());
+
+		for(int k=0;k<na_cur.size();k++)
+		{
+			cube &c = na_cur[k];
+
+			//derived it
+			node_fixed.insert(c);
+
+			for(int i=0;i<6;i++)
+			{
+				cube n = c;
+				n.rotate_face(i);
+
+				if(node_fixed.find(n) == node_fixed.end()){
+					node_fixed.insert(n);
+					na_next.push_back(n);
+				}
+			}
+
+			if((k & 0xF) == 0)
+				printf("%.2f%%    \r", (float)k*100/node_act[actid].size());
+		}
+		actid = 1 - actid;
+		depth ++;
+
+	}
+}
+
+#if 0
 //=====================================================================
 #include <GL/glut.h>
 #include <cstdlib>
@@ -183,7 +245,7 @@ namespace {
 Image* loadBMP(const char* filename) {
     ifstream input;
     char filepath[256];
-    sprintf(filepath, "../test/data/%s",filename);
+    sprintf(filepath, "../hodgepodge/data/%s",filename);
     input.open(filepath, ifstream::binary);
     assert(!input.fail() || !"Could not find file");
     char buffer[2];
@@ -525,5 +587,5 @@ int main(int argc,char** argv)
     return 0;
 }
 
-
+#endif
 
