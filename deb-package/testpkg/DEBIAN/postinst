@@ -1,0 +1,56 @@
+#!/bin/bash
+
+CWD_DIR=`pwd`
+OS_ID=`lsb_release -is`
+OS_VER=`lsb_release -ds | awk '{print $2}'`
+KERNEL_RELEASE=`uname -r`
+KERNEL_VERSION=`uname -r|awk -F "-" '{print $1}'`
+KERNEL_ARCH=`uname -m`
+#KERNEL_NOARCH=`echo $KERNEL_RELEASE | sed s/$KERNEL_ARCH/noarch/`
+BUILD_DIR=/lib/modules/$KERNEL_RELEASE/build
+PASS=
+
+ECHO_PREFIX_INFO="\033[1;32;40mINFO...\033[0;0m"
+ECHO_PREFIX_ERROR="\033[1;31;40mError...\033[0;0m"
+
+function try_cmd(){
+    "$@"
+    status=$?
+    if [ $status -ne 0 ]; then
+        echo -e $ECHO_PREFIX_ERROR "ERROR with \"$@\", Return status ${status}"
+        exit $status
+    fi
+}
+
+function dpkg_check(){
+    echo -e $ECHO_PREFIX_INFO "Check if $1 exists ..."
+    dpkg -l $1 &> /dev/null
+    status=$?
+    return $status
+}
+
+echo -e $ECHO_PREFIX_INFO "postint script is called"
+#Check kernel version
+#check_kernel_header
+
+
+if [ "Ubuntu" = "$OS_ID" -o "Debian" = "$OS_ID" ];then 
+    try_cmd dpkg_check gcc
+fi
+
+if [ -d "/opt/test" ]; then
+    echo -e $ECHO_PREFIX_INFO "target dir detected" 
+fi
+
+echo -e $ECHO_PREFIX_INFO "Compiling /test/test ..."
+cd test
+gcc -o test main.c
+
+if [ $? -eq 0 ]; then
+echo -e $ECHO_PREFIX_INFO "Compile done successful"
+fi
+
+echo -e $ECHO_PREFIX_INFO $KERNEL_VERSION
+echo -e $ECHO_PREFIX_INFO "postint script is over"
+
+exit 

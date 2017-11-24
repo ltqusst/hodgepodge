@@ -1,0 +1,8 @@
+#!/bin/sh
+
+
+rm /test/* -rf
+echo "nothing to do for this package's removal postrm!"
+
+
+exit 0

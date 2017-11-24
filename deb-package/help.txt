@@ -1,0 +1,11 @@
+
+
+commman:
+
+   dpkg -b testpkg | dpkg-deb -b testpkg
+
+will generate testpkg.deb
+
+
+better keep package name consistent with the .deb file name
+

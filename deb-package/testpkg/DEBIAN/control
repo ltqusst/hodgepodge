@@ -1,0 +1,8 @@
+Package: testpkg
+Source: test by tingqian src
+Version: 1.0
+Architecture: amd64
+Maintainer: Tingqian Li <tingqian.li@intel.com>
+Section: misc
+Priority: optional
+Description: Test debian

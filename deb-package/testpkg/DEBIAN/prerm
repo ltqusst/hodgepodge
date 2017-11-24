@@ -1,0 +1,6 @@
+#!/bin/sh
+
+echo "prerm: Removing generated binary ..."
+rm /test/* -rf
+
+
