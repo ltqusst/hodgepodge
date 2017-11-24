@@ -62,7 +62,7 @@ void test1()
 #include "thread_queue.h"
 
 //======================================================================================
-thread_queue<int> theque;
+blocking_queue<int> theque;
 
 void call_from_thread(int &k, int th)
 {
@@ -104,35 +104,32 @@ void test2()
 
 
 //======================================================================================
+// passing shared_ptr between threads through a queue
 #include <atomic>
 class MyObj
 {
 public:
-    MyObj(){cnt0++;}
-    ~MyObj(){cnt1++;}
-    
-    static std::atomic_int cnt0;
-    static std::atomic_int cnt1;
-    
+    MyObj(){cnt_ctor++;}
+    ~MyObj(){cnt_dtor++;}
+    static std::atomic_int cnt_ctor;
+    static std::atomic_int cnt_dtor;
 };
+std::atomic_int MyObj::cnt_ctor(0);
+std::atomic_int MyObj::cnt_dtor(0);
 
-std::atomic_int MyObj::cnt0(0);
-std::atomic_int MyObj::cnt1(0);
+typedef std::pair<std::shared_ptr<MyObj>, std::shared_ptr<MyObj>> DataEle;
 
+blocking_queue<DataEle> sque;
 
-thread_queue<std::shared_ptr<MyObj> > sque;
-
-void worker_thread(int &k)
+void worker_thread(int &cnt)
 {
     show_pid_tid("test2");
     while(1)
     {
         int i;
-        std::shared_ptr<MyObj> p;
-        
+        DataEle p;
         if(!sque.get(p)) break;
-        
-        k++;
+        cnt++;
     }
 }
 
@@ -145,8 +142,10 @@ void test3()
 
   for(int i=0;i<1000;i++)
   {
-      std::shared_ptr<MyObj> p(new MyObj);
-      sque.put(p);
+      std::shared_ptr<MyObj> p1(new MyObj);
+      std::shared_ptr<MyObj> p2(new MyObj);
+      DataEle d(p1,p2);
+      sque.put(d);
   }
   sque.close();
 
@@ -155,7 +154,7 @@ void test3()
   th3.join();
   
   printf("t=%d (%d+%d+%d), max_size=%d, ctor:%d  dtor:%d   sque remain:%d\n", (t1+t2+t3), t1,t2,t3, sque.max_size(),
-  MyObj::cnt0.load(), MyObj::cnt1.load(), sque.size());
+  MyObj::cnt_ctor.load(), MyObj::cnt_dtor.load(), sque.size());
 }
 
 //=============================================================================================================
@@ -289,8 +288,8 @@ int main()
     
     //test1();  
     //test2();
-    //test3();
-    test4();    
+    test3();
+    //test4();    
 }
 
 
