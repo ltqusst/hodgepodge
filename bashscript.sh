@@ -48,10 +48,10 @@ string=01234567890abcdefgh
 echo ">>>>>>>>>3A" ${parameter:-word} ${string:7} ${string:7:2} ${string: -7}
 parameter='word1 word2 word3 word4 word5'
 echo ">>>>>>>>>3B" ${parameter#a* }
-echo ">>>>>>>>>3B" ${parameter#w*2}  # remove words until first match
-echo ">>>>>>>>>3B" ${parameter##w*[24] } # remove words until last match
-echo ">>>>>>>>>3B" ${parameter%w*4}  # remove words after first match -- from right to left
-echo ">>>>>>>>>3B" ${parameter%%w*} # remove words after last match -- from right to left
+echo ">>>>>>>>>3B" ${parameter#w*2}      # remove words to the left  of the first match
+echo ">>>>>>>>>3B" ${parameter##w*[24] } # remove words to the left  of the last  match
+echo ">>>>>>>>>3B" ${parameter%w*4}      # remove words to the right of the first match
+echo ">>>>>>>>>3B" ${parameter%%w*}      # remove words to the right of the last  match
 FILENAME=bash_hackers.txt
 echo ">>>>>>>>>3C" ${FILENAME%.txt}
 echo ">>>>>>>>>3C" ${FILENAME%.*}

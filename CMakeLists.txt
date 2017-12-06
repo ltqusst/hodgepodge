@@ -32,12 +32,19 @@ add_executable(tmem_problem tmem_problem.cpp)
 
 # this sub dir will introduce project jingo
 add_subdirectory(lib_jingo)
+add_subdirectory(lib_jingo2)
+
+add_executable(tjingo tjingo.cpp)
+target_link_libraries(tjingo jingo2 jingo)
+# add_definitions(-fno-common)
+set_target_properties(tjingo PROPERTIES COMPILE_FLAGS "")
 
 add_executable(tthreads tthreads.cpp)
 target_link_libraries(tthreads 
         jingo# here "jingo" is "A library target name" rather than a plain/full lib name
         pthread
 ) 
+
 add_executable              (tremove tremove.cpp)
 add_executable              (tchrono tchrono.cpp)
 add_executable              (tforward tforward.cpp)
@@ -128,4 +135,8 @@ find_library(OPENCL_LIBRARY OpenCL HINTS /usr/lib/x86_64-linux-gnu)
 message( STATUS "OPENCL_LIBRARY = ${OPENCL_LIBRARY}"  )
 target_link_libraries       (topencl PUBLIC ${OPENCL_LIBRARY})
 
+
+
+add_executable              (tusbfs tusbfs.cpp)
+target_include_directories  (tusbfs PUBLIC /usr/include/)
 
