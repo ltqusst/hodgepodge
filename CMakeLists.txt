@@ -45,6 +45,10 @@ target_link_libraries(tthreads
         pthread
 ) 
 
+add_executable              (t1 t1.cpp)
+add_executable              (tipc tipc.cpp)
+target_link_libraries       (tipc pthread )
+
 add_executable              (tremove tremove.cpp)
 add_executable              (tchrono tchrono.cpp)
 add_executable              (tforward tforward.cpp)
